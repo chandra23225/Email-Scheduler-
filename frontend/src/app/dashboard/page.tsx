@@ -47,8 +47,15 @@ function DashboardContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070b12] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-[#070b12] text-slate-100">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 text-sm font-bold text-white shadow-lg shadow-violet-900/30">
+            O
+          </div>
+          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-full w-1/2 animate-pulse rounded-full bg-violet-400" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -132,8 +139,15 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#070b12] flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex min-h-screen items-center justify-center bg-[#070b12] text-slate-100">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 text-sm font-bold text-white shadow-lg shadow-violet-900/30">
+              O
+            </div>
+            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-full w-1/2 animate-pulse rounded-full bg-violet-400" />
+            </div>
+          </div>
         </div>
       }
     >

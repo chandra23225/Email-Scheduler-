@@ -14,10 +14,10 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon, color }: StatCardProps) {
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-surface-border bg-white px-4 py-3">
+    <div className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-surface-border bg-surface-card px-4 py-3">
       <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
       <div className="min-w-0">
-        <p className="text-2xl font-semibold text-slate-900">{value.toLocaleString()}</p>
+        <p className="text-2xl font-semibold text-slate-100">{value.toLocaleString()}</p>
         <p className="text-xs text-slate-400 truncate">{label}</p>
       </div>
     </div>

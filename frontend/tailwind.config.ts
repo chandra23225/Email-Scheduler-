@@ -23,10 +23,10 @@ const config: Config = {
           950: '#032619',
         },
         surface: {
-          DEFAULT: '#f7f9f8',
-          card: '#ffffff',
-          border: '#e2e8e5',
-          hover: '#f0f5f2',
+          DEFAULT: '#070b12',
+          card: '#0f172a',
+          border: '#243247',
+          hover: '#172338',
         },
       },
       fontFamily: {

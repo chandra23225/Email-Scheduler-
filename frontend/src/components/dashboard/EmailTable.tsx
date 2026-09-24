@@ -85,12 +85,12 @@ export function EmailTable({ tab }: EmailTableProps) {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search emails..."
-          className="w-full max-w-sm rounded-lg border border-surface-border bg-white py-2 pl-9 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+          className="w-full max-w-sm rounded-lg border border-surface-border bg-surface-card py-2 pl-9 pr-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-lg border border-surface-border bg-white">
+      <div className="overflow-hidden rounded-lg border border-surface-border bg-surface-card">
         {isError && (
           <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-red-500/20 bg-red-500/5 text-sm text-red-300">
             <span>Could not load these emails.</span>
@@ -148,10 +148,10 @@ export function EmailTable({ tab }: EmailTableProps) {
                     key={job.id}
                     className="border-b border-surface-border last:border-0 hover:bg-surface-hover transition-colors"
                   >
-                    <td className="max-w-48 truncate px-4 py-3 font-medium text-slate-800">
+                    <td className="max-w-48 truncate px-4 py-3 font-medium text-slate-100">
                       {job.recipient_email}
                     </td>
-                    <td className="max-w-48 truncate px-4 py-3 text-slate-600">
+                    <td className="max-w-48 truncate px-4 py-3 text-slate-300">
                       {job.subject}
                     </td>
                     <td className="max-w-40 truncate px-4 py-3 text-xs text-slate-500">

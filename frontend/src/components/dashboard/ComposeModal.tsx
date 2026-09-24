@@ -302,7 +302,7 @@ export function ComposeModal({ isOpen, onClose }: ComposeModalProps) {
             onChange={(e) => handleRecipientsChange(e.target.value)}
             rows={3}
             className={clsx(
-              'w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-slate-800',
+              'w-full bg-surface-card border rounded-lg px-3.5 py-2.5 text-sm text-slate-100',
               'placeholder:text-slate-400 transition-colors duration-200 resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500',
               errors.recipients ? 'border-red-500/50' : 'border-surface-border'
@@ -327,7 +327,7 @@ export function ComposeModal({ isOpen, onClose }: ComposeModalProps) {
           <select
             value={form.senderId}
             onChange={(e) => update('senderId', e.target.value)}
-            className="w-full rounded-lg border border-surface-border bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+            className="w-full rounded-lg border border-surface-border bg-surface-card px-3.5 py-2.5 text-sm text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
           >
             <option value="">Default sender</option>
             {senders.map((s) => (
@@ -340,7 +340,7 @@ export function ComposeModal({ isOpen, onClose }: ComposeModalProps) {
 
         {/* Scheduling options */}
         <div className="grid grid-cols-1 gap-4 rounded-lg border border-surface-border bg-surface-hover p-4 sm:grid-cols-3">
-          <div className="mb-1 flex items-center gap-2 text-sm font-medium text-slate-700 sm:col-span-3">
+          <div className="mb-1 flex items-center gap-2 text-sm font-medium text-slate-200 sm:col-span-3">
             <Zap className="w-4 h-4 text-primary-400" />
             Scheduling Options
           </div>
