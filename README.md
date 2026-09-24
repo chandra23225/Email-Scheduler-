@@ -1,4 +1,4 @@
-# Outbox
+# EmailSched
 
 A production-style full-stack project for scheduling and tracking bulk email sends, built with a Next.js frontend, Express API, PostgreSQL, Redis, and BullMQ background workers.
 
