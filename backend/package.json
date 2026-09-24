@@ -1,7 +1,7 @@
 {
-  "name": "reachinbox-scheduler-backend",
+  "name": "outbox-backend",
   "version": "1.0.0",
-  "description": "Production-grade email job scheduler backend",
+  "description": "Personal outbound email workflow backend",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

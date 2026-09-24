@@ -1,8 +1,8 @@
 {
-  "name": "reachinbox-scheduler",
+  "name": "outbox",
   "private": true,
   "version": "1.0.0",
-  "description": "A full-stack email scheduling platform with async processing, dispatch controls, and real-time analytics.",
+  "description": "A personal outbound email workspace with async processing, scheduling, and delivery monitoring.",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run dev",

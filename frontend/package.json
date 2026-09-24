@@ -1,5 +1,5 @@
 {
-  "name": "reachinbox-scheduler-frontend",
+  "name": "outbox-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {

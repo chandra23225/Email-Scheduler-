@@ -22,28 +22,28 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#070b12] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#070b12] p-4">
       <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500 text-lg font-bold text-white">
+          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 text-lg font-bold text-white shadow-lg shadow-violet-900/30">
             O
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">outbox</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">outbox</h1>
           <p className="mt-1 text-xs uppercase tracking-widest text-slate-400">Email workspace</p>
         </div>
 
         {/* Card */}
-        <div className="rounded-xl border border-surface-border bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-8 shadow-[0_25px_80px_rgba(15,23,42,0.6)] backdrop-blur-sm">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-slate-900">Welcome back</h2>
+            <h2 className="text-xl font-semibold text-white">Welcome back</h2>
             <p className="text-slate-400 text-sm mt-1">
               Sign in to manage your email campaigns
             </p>
@@ -56,8 +56,8 @@ export default function LoginPage() {
               { icon: <Zap className="w-4 h-4" />, text: 'Real-time queue visibility' },
               { icon: <Mail className="w-4 h-4" />, text: 'Rate limiting & Slack alerts' },
             ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-slate-500">
-                <span className="text-primary-600">{f.icon}</span>
+              <div key={i} className="flex items-center gap-3 text-sm text-slate-300">
+                <span className="text-violet-300">{f.icon}</span>
                 <span>{f.text}</span>
               </div>
             ))}
@@ -66,7 +66,7 @@ export default function LoginPage() {
           {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary-500 px-4 py-3 font-medium text-white shadow-sm transition-all duration-200 hover:bg-primary-600 active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-400 px-4 py-3 font-medium text-white shadow-lg shadow-violet-900/20 transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
           >
             {/* Google SVG */}
             <svg className="w-5 h-5" viewBox="0 0 24 24">

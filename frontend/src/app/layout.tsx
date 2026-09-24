@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'ReachInbox Scheduler',
-  description: 'Production-grade email job scheduler',
+  title: 'Outbox',
+  description: 'A personal outbound email workspace',
 };
 
 export default function RootLayout({

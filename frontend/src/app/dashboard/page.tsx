@@ -47,8 +47,8 @@ function DashboardContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#070b12] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -56,7 +56,7 @@ function DashboardContent() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-[#070b12] text-slate-100">
       <Sidebar
         activeTab={activeTab}
         onCompose={() => setComposeOpen(true)}
@@ -66,18 +66,18 @@ function DashboardContent() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-8 lg:ml-60 lg:px-10">
         {/* Page title + compose button */}
-        <div className="flex items-start justify-between gap-4 border-b border-surface-border pb-5 animate-slide-up">
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5 animate-slide-up">
           <div>
             <p className="text-xs text-slate-400 mb-2">Workspace / outbound</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Email workspace</h1>
-            <p className="text-sm text-slate-500 mt-1 max-w-xl">Schedule and track your outreach from one focused inbox.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-white">Email workspace</h1>
+            <p className="text-sm text-slate-400 mt-1 max-w-xl">Schedule and track your outreach from one focused inbox.</p>
           </div>
           <div className="flex items-center gap-3">
             <a
               href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/admin/queues`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors px-3 py-2 rounded-lg border border-surface-border hover:border-primary-300"
+              className="hidden sm:flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg border border-white/10 bg-slate-900/70 hover:border-violet-400/40"
             >
               <ExternalLink className="w-4 h-4" />
               BullMQ Dashboard
@@ -98,7 +98,7 @@ function DashboardContent() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-white border border-surface-border rounded-lg w-fit animate-slide-up [animation-delay:120ms]">
+        <div className="flex gap-1 p-1 bg-slate-900 border border-white/10 rounded-lg w-fit animate-slide-up [animation-delay:120ms]">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -106,8 +106,8 @@ function DashboardContent() {
               className={clsx(
                 'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                   activeTab === tab.key
-                  ? 'bg-primary-50 text-primary-700 border border-primary-100'
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-surface-hover'
+                  ? 'bg-violet-500/10 text-violet-200 border border-violet-400/20'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
               )}
             >
               {tab.icon}
@@ -132,8 +132,8 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-surface flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-[#070b12] flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
