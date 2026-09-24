@@ -4,14 +4,6 @@ A production-style full-stack project for scheduling and tracking bulk email sen
 
 This project was designed to feel like a real SaaS product: OAuth sign-in, rate-limit enforcement, job orchestration, operational logging, and an admin dashboard for monitoring delivery workflows.
 
-## Why this is a strong portfolio project
-
-- End-to-end product workflow from login to scheduled email dispatch
-- Real async worker architecture using Redis + BullMQ
-- Production-minded patterns: idempotency, retry handling, queue reconciliation, and rate limiting
-- Full-stack TypeScript application with a clean UI and API layer
-- Demonstrates system design thinking, backend reliability, and operational awareness
-
 ## Tech stack
 
 - Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS
