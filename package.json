@@ -1,5 +1,19 @@
 {
-  "dependencies": {
-    "typescript": "^7.0.2"
+  "name": "reachinbox-scheduler",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A full-stack email scheduling platform with async processing, dispatch controls, and real-time analytics.",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "start": "npm --prefix backend run start",
+    "lint": "npm --prefix frontend run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
   }
 }

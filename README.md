@@ -1,303 +1,256 @@
-# ReachInbox Email Scheduler
+# ReachInbox Scheduler
 
-A production-grade email job scheduler built for the ReachInbox hiring assignment.  
-Schedule bulk email campaigns, track delivery in real time, enforce per-sender rate limits, and receive Slack alerts — all from a clean Next.js 15 dashboard.
+A production-style full-stack project for scheduling and tracking bulk email sends, built with a Next.js frontend, Express API, PostgreSQL, Redis, and BullMQ background workers.
 
----
+This project was designed to feel like a real SaaS product: OAuth sign-in, rate-limit enforcement, job orchestration, operational logging, and an admin dashboard for monitoring delivery workflows.
 
-## Table of Contents
+## Why this is a strong portfolio project
 
-1. [Quick Start](#quick-start)
-2. [Environment Variables](#environment-variables)
-3. [Running the Backend](#running-the-backend)
-4. [Running the Frontend](#running-the-frontend)
-5. [Ethereal Email Setup](#ethereal-email-setup)
-6. [Google OAuth Setup](#google-oauth-setup)
-7. [Slack Setup (Optional)](#slack-setup-optional)
-8. [Architecture Overview](#architecture-overview)
-9. [Features Implemented](#features-implemented)
-10. [API Reference](#api-reference)
-11. [Assumptions, Shortcuts & Trade-offs](#assumptions-shortcuts--trade-offs)
+- End-to-end product workflow from login to scheduled email dispatch
+- Real async worker architecture using Redis + BullMQ
+- Production-minded patterns: idempotency, retry handling, queue reconciliation, and rate limiting
+- Full-stack TypeScript application with a clean UI and API layer
+- Demonstrates system design thinking, backend reliability, and operational awareness
 
----
+## Tech stack
 
-## Quick Start
+- Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS
+- Backend: Node.js, Express, TypeScript
+- Data: PostgreSQL, Redis, Elasticsearch
+- Queueing: BullMQ
+- Auth: Google OAuth + JWT session flow
+- Email: Nodemailer with Ethereal SMTP for local testing
+- Ops: Docker Compose for local infrastructure
+
+## Core features
+
+- Google-based authentication and protected dashboard access
+- Compose email modal for subject, body, recipients, scheduling, delay configuration, and per-sender limits
+- Background queue processing for large outbound campaigns
+- Per-sender rate limiting to prevent abuse and protect deliverability
+- Job retry, delay scheduling, and status tracking across batches
+- Elasticsearch indexing for search and operational visibility
+- Slack integration for rate-limit alerts
+- Admin queue monitoring for background job health
+
+## Case study: building a reliable outbound email platform
+
+### Problem
+
+The biggest engineering challenge in this project was not building a UI, but designing a system that could safely process large numbers of scheduled outbound emails while staying within delivery and operational constraints.
+
+A naive implementation would fail in a few common ways:
+
+- duplicate sends caused by retries and restarts
+- rate-limit violations from multiple workers firing simultaneously
+- inconsistent state between the database and the queue
+- poor observability when a batch stalls or fails in the background
+
+### Architecture and flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as Next.js dashboard
+    participant API as Express API
+    participant DB as PostgreSQL
+    participant Redis as Redis + BullMQ
+    participant Worker as Background Worker
+    participant SMTP as Ethereal SMTP
+    participant ES as Elasticsearch
+
+    User->>Frontend: Compose job / schedule campaign
+    Frontend->>API: POST /emails/schedule
+    API->>DB: Insert batch + email_jobs rows
+    API->>Redis: Enqueue delayed jobs
+    Redis->>Worker: Trigger job when scheduled time arrives
+    Worker->>DB: Validate idempotency + job status
+    Worker->>Redis: Atomic rate-limit check
+    Worker->>SMTP: Send email
+    Worker->>DB: Update delivery status
+    Worker->>ES: Store searchable record
+```
+
+```text
+Browser / Next.js Dashboard
+        │
+        ▼
+Express API
+        │
+        ├── Google OAuth + JWT auth
+        ├── Scheduling service
+        ├── Queue publication to BullMQ
+        └── Dashboard data retrieval
+        │
+        ▼
+Redis + BullMQ
+        │
+        ▼
+Worker process
+        ├── idempotency checks
+        ├── rate-limit enforcement
+        ├── SMTP send
+        ├── database status updates
+        └── Elasticsearch indexing
+        │
+        ▼
+PostgreSQL + Elasticsearch
+```
+
+### Design decisions and trade-offs
+
+#### 1) PostgreSQL as the source of truth
+
+I chose PostgreSQL for durable job state and campaign information because it gives transactional consistency and reliable recovery for status transitions.
+
+Trade-off:
+- Strong consistency and clearer auditability
+- More read/write work than a pure in-memory queue system
+- Requires explicit reconciliation after failures or restarts
+
+#### 2) Redis + BullMQ for scheduling and async execution
+
+BullMQ makes delayed dispatch, retry behavior, and worker coordination straightforward while keeping the queue durable enough for real use.
+
+Trade-off:
+- Excellent for async orchestration and backpressure
+- Requires infrastructure discipline and operational monitoring
+- Queue state is not the single source of truth; the database still matters for correctness
+
+#### 3) Rate limiting in Redis
+
+Per-sender limits were enforced with Redis-backed counters so workers could quickly decide whether a send should proceed without creating a hot DB bottleneck.
+
+Trade-off:
+- High performance and low contention for limit checks
+- Slight increase in system complexity
+- Redis state must be treated as operationally important, not just a cache
+
+#### 4) Elasticsearch for search and visibility
+
+Elasticsearch was treated as an operational read-optimized layer, not the system of record. This gives searchable delivery records without overloading the transactional database.
+
+Trade-off:
+- Better visibility and debugging
+- Extra infrastructure to manage and maintain
+- Strong eventual consistency compared with PostgreSQL
+
+#### 5) Ethereal for local testing
+
+Using Ethereal SMTP enables safe local testing and demonstration without accidentally sending real emails.
+
+Trade-off:
+- Great for demo reliability and safety
+- Not suitable for production outbound delivery
+- Makes the local environment feel more like a controlled sandbox than a live sender setup
+
+### What I learned
+
+The project improved my understanding of how a reliable queue-based system differs from a basic CRUD app:
+
+- correctness depends on both the database and the queue being aligned
+- retries and idempotency need explicit design, not default assumptions
+- async systems are only trustworthy when visibility and failure recovery are part of the architecture
+
+## Quick start
+
+### 1) Start infrastructure
 
 ```bash
-# 1. Start infrastructure (Postgres, Redis, Elasticsearch)
 docker compose up -d
+```
 
-# 2. Backend
+### 2) Configure environment variables
+
+Backend:
+
+```bash
 cd backend
-npm ci
-cp .env.example .env          # PowerShell: Copy-Item .env.example .env
-# Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and a random JWT_SECRET
-npm run dev                   # API server on :4000
-
-# (separate terminal)
-npm run worker                # BullMQ worker process
-
-# 3. Frontend
-cd frontend
-cp .env.local.example .env.local  # PowerShell: Copy-Item .env.local.example .env.local
-npm ci
-npm run dev                   # Next.js on :3000
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000), sign in with Google, and start scheduling.
+Fill in the required values for:
 
----
+- `JWT_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
 
-## Environment Variables
-
-### Backend — `backend/.env`
-
-```env
-# Server
-PORT=4000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:3000
-
-# PostgreSQL
-DATABASE_URL=postgresql://postgres:password@localhost:5432/reachinbox_scheduler
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-
-# JWT
-JWT_SECRET=replace-with-a-random-secret
-JWT_EXPIRES_IN=7d
-
-# Google OAuth  (required)
-# https://console.cloud.google.com → APIs & Services → Credentials → OAuth 2.0 Client ID
-# Authorised redirect URI: http://localhost:4000/auth/google/callback
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:4000/auth/google/callback
-
-# Slack OAuth  (optional — needed only for rate-limit notifications)
-# https://api.slack.com/apps → OAuth & Permissions → redirect URL: http://localhost:4000/slack/callback
-# Scopes: chat:write, incoming-webhook
-SLACK_CLIENT_ID=your-slack-client-id
-SLACK_CLIENT_SECRET=your-slack-client-secret
-SLACK_REDIRECT_URI=http://localhost:4000/slack/callback
-
-# Ethereal Email  (leave blank — auto-created on first login)
-ETHEREAL_USER=
-ETHEREAL_PASS=
-
-# Rate Limiting
-MAX_EMAILS_PER_HOUR=200
-MAX_EMAILS_PER_HOUR_PER_SENDER=50
-WORKER_CONCURRENCY=5
-MIN_DELAY_BETWEEN_SENDS_MS=2000
-
-# Elasticsearch
-ELASTICSEARCH_URL=http://localhost:9200
-ELASTICSEARCH_USERNAME=
-ELASTICSEARCH_PASSWORD=
-```
-
-`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `JWT_SECRET` are required for login. Slack is optional unless you want live rate-limit notifications. Everything else has working local defaults.
-
-For PowerShell, generate a local JWT secret with:
-
-```powershell
-[guid]::NewGuid().ToString('N')
-```
-
-### Frontend — `frontend/.env.local`
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
-NEXT_PUBLIC_APP_NAME=ReachInbox Scheduler
-```
-
----
-
-## Running the Backend
-
-### Prerequisites
-- Node.js ≥ 18
-- Docker Desktop (for Postgres, Redis, Elasticsearch)
-
-### Steps
-
-```bash
-# Start all infrastructure containers
-docker compose up -d
-
-# Install dependencies
-cd backend
-npm ci
-
-# Copy and edit env
-Copy-Item .env.example .env
-# → fill in GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and JWT_SECRET
-
-# Start the API server (migrations run automatically on boot)
-npm run dev
-# → http://localhost:4000
-# → BullBoard at http://localhost:4000/admin/queues
-
-# Start the BullMQ worker in a SEPARATE terminal
-npm run worker
-```
-
-To run migrations manually:
-```bash
-npm run migrate
-```
-
-To build for production:
-```bash
-npm run build
-npm start
-```
-
----
-
-## Running the Frontend
+Frontend:
 
 ```bash
 cd frontend
-npm ci
-
 cp .env.local.example .env.local
-# NEXT_PUBLIC_API_URL is already set to http://localhost:4000
+```
 
+### 3) Install dependencies and run the app
+
+From the project root:
+
+```bash
+npm install
 npm run dev
-# → http://localhost:3000
 ```
 
----
+This runs the backend and frontend in parallel.
 
-## Ethereal Email Setup
+For the full background worker flow, keep a second terminal open and run:
 
-[Ethereal](https://ethereal.email) is a free fake SMTP service — emails are captured and never actually delivered, making it perfect for demos and testing.
-
-**Automatic (recommended):**  
-Just sign in with Google. On first login, a dedicated Ethereal SMTP account is automatically created and stored as your default sender. No configuration needed.
-
-**Manual (optional):**  
-Visit [ethereal.email/create](https://ethereal.email/create), copy the credentials, and add them to `backend/.env`. When both values are set, the application reuses this account:
-
-```env
-ETHEREAL_USER=your.name@ethereal.email
-ETHEREAL_PASS=yourpassword
-ETHEREAL_HOST=smtp.ethereal.email
-ETHEREAL_PORT=587
+```bash
+npm --prefix backend run worker
 ```
 
-**Viewing sent emails:**  
-After a job processes, the worker logs a preview URL:
-```
-https://ethereal.email/message/XXXXXXXXXXXXXXX
-```
-You can also create additional Ethereal senders from the "Sender" dropdown inside the Compose modal.
+Then open:
 
----
+- Frontend: http://localhost:3000
+- API: http://localhost:4000
+- Queue dashboard: http://localhost:4000/admin/queues
 
-## Google OAuth Setup
+## Local setup details
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com) → **APIs & Services** → **Credentials**.
-2. Click **Create Credentials** → **OAuth 2.0 Client ID** → Application type: **Web application**.
-3. Under **Authorised redirect URIs**, add: `http://localhost:4000/auth/google/callback`
-4. Copy the **Client ID** and **Client Secret** into `backend/.env`.
+### Required tools
 
----
+- Node.js 18+
+- Docker Desktop
+- npm
 
-## Slack Setup (Optional)
+### Services started by Docker
 
-Slack is only needed if you want rate-limit notifications pushed to a channel.
+- PostgreSQL on port 5432
+- Redis on port 6379
+- Elasticsearch on port 9200
 
-1. Go to [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **From scratch**.
-2. Under **OAuth & Permissions** → **Redirect URLs**, add: `http://localhost:4000/slack/callback`
-3. Under **Scopes** → **Bot Token Scopes**, add: `chat:write`, `incoming-webhook`
-4. Copy **Client ID** and **Client Secret** into `backend/.env`.
-5. In the dashboard, click **Connect Slack** in the header to complete the OAuth flow.
+### Testing email delivery locally
 
-Once connected, a Slack message is automatically sent whenever a sender's hourly rate limit is hit.
+The app integrates with Ethereal SMTP by default. When you log in with Google, it can auto-create a sender account for safe local email testing.
 
----
+## Project highlights for resume / hiring context
 
-## Architecture Overview
+- Built a full-stack distributed email workflow with queue-driven processing
+- Designed around reliability constraints like retries, idempotency, and rate limiting
+- Integrated authentication, scheduling, and operational monitoring into a cohesive product experience
+- Applied system design and backend engineering concepts in a real application rather than a tutorial-only sample
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  Next.js 15 Frontend  (port 3000)                                │
-│  Google OAuth → HTTP-only cookie → Dashboard → Compose → Tables  │
-└──────────────────────┬───────────────────────────────────────────┘
-                       │  REST API  (JWT Bearer token)
-┌──────────────────────▼───────────────────────────────────────────┐
-│  Express Backend  (port 4000)                                    │
-│  ┌──────────┐   ┌───────────────┐   ┌──────────────────────┐    │
-│  │  Routes  │   │   BullBoard   │   │  Passport Google     │    │
-│  └────┬─────┘   └───────────────┘   └──────────────────────┘    │
-│       │                                                           │
-│  ┌────▼──────────────────────────────────────────────────────┐   │
-│  │  BullMQ Queue  (Redis sorted set, delayed jobs)           │   │
-│  └────┬──────────────────────────────────────────────────────┘   │
-│       │                                                           │
-│  ┌────▼──────────────────────────────────────────────────────┐   │
-│  │  Worker Process  (separate Node process)                  │   │
-│  │  1. Idempotency  — Redis SET NX + DB status check         │   │
-│  │  2. Rate limit   — Redis Lua atomic check-and-increment   │   │
-│  │  3. Min delay    — Redis shared timestamp across workers  │   │
-│  │  4. Send         — Nodemailer → Ethereal SMTP             │   │
-│  │  5. Persist      — PostgreSQL status update               │   │
-│  │  6. Index        — Elasticsearch document upsert          │   │
-│  │  7. Notify       — Slack webhook on rate-limit hit        │   │
-│  └────┬──────────────────────────────────────────────────────┘   │
-│       │                                                           │
-│  ┌────▼──────────┐   ┌────────────────────┐                     │
-│  │  PostgreSQL   │   │   Elasticsearch    │                     │
-│  │  source of    │   │   full-text        │                     │
-│  │  truth        │   │   search only      │                     │
-│  └───────────────┘   └────────────────────┘                     │
-└──────────────────────────────────────────────────────────────────┘
+## Repository structure
+
+```text
+.
+├── backend/                  # Express API + BullMQ worker
+├── frontend/                 # Next.js dashboard
+├── docs/                     # project design and planning notes
+├── docker-compose.yml        # local infra for Postgres, Redis, and Elasticsearch
+├── package.json              # root scripts for local orchestration
+├── README.md                 # project overview
+├── LICENSE                   # MIT license
+└── .gitignore
 ```
 
-### How Scheduling Works
+## License
 
-1. The frontend POSTs to `/emails/schedule` with subject, body, recipient list (pasted or CSV), start time, per-email delay, and optional hourly limit.
-2. The backend parses and validates recipients, creates a **batch** record and one **email_job** row per recipient in PostgreSQL, then enqueues each as a **BullMQ delayed job**:
-   ```
-   delay = (startTime + i × delayBetweenEmailsMs) - now
-   ```
-3. BullMQ stores delayed jobs in a **Redis sorted set** keyed by their fire timestamp. Jobs are not polled — Redis notifies BullMQ when a job's time arrives.
-4. The **worker** picks up the job, runs the processing pipeline (idempotency → rate limit → min delay → send → persist), and moves on to the next.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-### How Persistence on Restart Works
+## Notes
 
-BullMQ delayed jobs live entirely in Redis. The `docker-compose.yml` starts Redis with `--appendonly yes`, which persists the sorted set to disk (AOF mode). This means:
-
-- **Server restart:** the Express app re-attaches to the same queue name on startup. Redis AOF keeps normal delayed jobs; startup reconciliation also scans PostgreSQL scheduled rows and recreates any job missing from Redis after a crash between database commit and enqueue.
-- **Worker restart:** the worker reconnects and resumes. Any jobs that were `active` (in-flight) when the worker died are retried by BullMQ's `attempts: 3` / exponential-backoff policy.
-- **Container restart:** Docker volumes (`redis_data`) survive `docker-compose down` / `docker-compose up` cycles, so no jobs are lost.
-- **Idempotency:** PostgreSQL `sent` or `cancelled` state is the durable guard and a short-lived Redis processing lock prevents concurrent duplicate work. The lock is released after each attempt so transient SMTP failures can use BullMQ retries. Jobs remain `retrying` until the final BullMQ attempt, then become `failed`.
-
-### How Rate Limiting & Concurrency Work
-
-| Setting | Default | Env var |
-|---|---|---|
-| Worker concurrency | 5 | `WORKER_CONCURRENCY` |
-| Min delay between sends | 2 000 ms | `MIN_DELAY_BETWEEN_SENDS_MS` |
-| Max emails / hour / sender | 50 | `MAX_EMAILS_PER_HOUR_PER_SENDER` |
-
-**Per-sender hourly rate limit** — enforced with an atomic Lua script in Redis:
-
-```lua
-local key    = KEYS[1]          -- rate_limit:<sender>:<YYYYMMDDTHH>
-local limit  = tonumber(ARGV[1])
-local ttl    = tonumber(ARGV[2]) -- ms until start of next UTC hour
-
-local current = redis.call('GET', key)
-if current == false then
-  redis.call('SET', key, 1, 'PX', ttl)
-  return {1, 1}
+This project is intentionally shaped as a product demo and engineering exercise, making it suitable for showcasing backend systems work, full-stack delivery, and practical asynchronous architecture in a GitHub portfolio.
 end
 local count = tonumber(current)
 if count >= limit then
